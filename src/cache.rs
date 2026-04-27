@@ -10,9 +10,10 @@ use std::io::Write;
 pub enum Type {
     Global,
     Function,
+    Offset,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CachedSignature {
     pub rva: usize,
     pub typ: Type,
@@ -27,8 +28,19 @@ impl CachedSignature {
             module_base,
         }
     }
+
     pub fn addr(&self) -> usize {
         self.rva + self.module_base
+    }
+
+    pub fn offset<T: bytemuck::Pod>(&self) -> Option<usize> {
+        if let Type::Offset = self.typ {
+            let addr = self.addr();
+            let value: usize = unsafe { std::mem::transmute_copy(&*(addr as *const T)) };
+            Some(value)
+        } else {
+            None
+        }
     }
 }
 
