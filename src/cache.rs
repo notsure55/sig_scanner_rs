@@ -33,11 +33,11 @@ impl CachedSignature {
         self.rva + self.module_base
     }
 
-    pub fn offset<T: bytemuck::Pod>(&self) -> Option<usize> {
+    pub fn offset<T: num_traits::PrimInt>(&self) -> Option<usize> {
         if let Type::Offset = self.typ {
             let addr = self.addr();
-            let value: usize = unsafe { std::mem::transmute_copy(&*(addr as *const T)) };
-            Some(value)
+            let value = unsafe { std::ptr::read_unaligned(addr as *const T) };
+            value.to_usize()
         } else {
             None
         }

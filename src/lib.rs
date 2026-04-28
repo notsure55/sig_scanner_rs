@@ -85,9 +85,9 @@ impl SigScanner {
             if let Some(mut cached_sig) = cache.find(sig.name) {
                 cached_sig.module_base = module.0.addr();
 
-                map.insert(sig.name.to_string(), cached_sig);
+                log::info!("Found cached_sig {} {cached_sig:X?}", sig.name);
 
-                log::info!("Found cached_sig {}", sig.name);
+                map.insert(sig.name.to_string(), cached_sig);
 
                 continue;
             }
