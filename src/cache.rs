@@ -1,6 +1,4 @@
 use anyhow::Result;
-use log::log;
-use serde::ser::{SerializeMap, Serializer};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -31,6 +29,13 @@ impl CachedSignature {
 
     pub fn addr(&self) -> usize {
         self.rva + self.module_base
+    }
+
+    // will derefrence into the global variable for you
+    pub fn global(&self) -> usize {
+        let addr = self.addr();
+        let value = unsafe { std::ptr::read_unaligned(addr as *const usize) };
+        value
     }
 
     pub fn offset<T: num_traits::PrimInt>(&self) -> Option<usize> {

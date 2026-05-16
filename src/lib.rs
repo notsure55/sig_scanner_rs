@@ -1,5 +1,4 @@
 use anyhow::Result;
-use bytemuck::{from_bytes, AnyBitPattern, Pod};
 use std::collections::BTreeMap;
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows_core::PCWSTR;
@@ -71,8 +70,8 @@ impl SigScanner {
         Ok(Self { sigs })
     }
 
-    fn extract_value<T: Pod + AnyBitPattern>(bytes: &[u8], address: usize) -> T {
-        *from_bytes::<T>(bytes)
+    fn extract_value(bytes: &[u8], address: usize) -> i32 {
+        i32::from_le_bytes(bytes[address..address + 4].try_into().unwrap())
     }
 
     fn scan(sigs: &[Signature]) -> Result<BTreeMap<String, cache::CachedSignature>> {
@@ -119,7 +118,7 @@ impl SigScanner {
                         Version::Relative => {
                             let address = (i as i32 + sig.offset) as usize;
 
-                            let offset = Self::extract_value::<i32>(bytes, address) as usize;
+                            let offset = Self::extract_value(bytes, address) as usize;
 
                             address + offset + 4
                         }
